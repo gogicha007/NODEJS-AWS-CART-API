@@ -5,7 +5,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy": "cdk deploy CartServiceCdkStack --require-approval never",
+    "deploy:vlab": "npm run deploy -- --profile vlab_dev"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.161",
