@@ -60,14 +60,14 @@ export class CartController {
   @Delete()
   @HttpCode(HttpStatus.OK)
   clearUserCart(@Req() req: AppRequest) {
-    this.cartService.removeByUserId(getUserIdFromRequest(req));
+    this.cartService.removeByUserId(getUserIdFromRequest(req) as string);
   }
 
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Put('order')
   checkout(@Req() req: AppRequest, @Body() body: CreateOrderDto) {
-    const userId = getUserIdFromRequest(req);
+    const userId = getUserIdFromRequest(req) ?? '';
     const cart = this.cartService.findByUserId(userId);
 
     if (!(cart && cart.items.length)) {

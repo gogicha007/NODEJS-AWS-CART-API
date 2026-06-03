@@ -5,7 +5,7 @@ import { PutCartPayload } from 'src/order/type';
 
 @Injectable()
 export class CartService {
-  private userCarts: Record<string, Cart> = {
+  private userCarts: Record<string, Cart | null> = {
     "a": {
       id: '1234',
       user_id: "a",
@@ -18,7 +18,7 @@ export class CartService {
     }
   };
 
-  findByUserId(userId: string): Cart {
+  findByUserId(userId: string): Cart | null {
     console.log('find by user id ', userId)
     console.log(this.userCarts)
     return this.userCarts[userId];
