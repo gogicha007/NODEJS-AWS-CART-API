@@ -7,16 +7,19 @@ export class UsersService {
   private readonly users: Record<string, User>;
 
   constructor() {
-    this.users = {};
+    this.users = {
+      "1": { id: 'a', name: "john", password: 'doe' },
+      "2": { id: 'b', name: "jane", password: 'dae' }
+    };
   }
 
-  findOne(name: string): User {
+  findOne(name: string): User | undefined {
     for (const id in this.users) {
       if (this.users[id].name === name) {
         return this.users[id];
       }
     }
-    return;
+    return undefined;
   }
 
   createOne({ name, password }: User): User {

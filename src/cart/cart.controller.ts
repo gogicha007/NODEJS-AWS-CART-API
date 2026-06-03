@@ -9,6 +9,7 @@ import {
   HttpStatus,
   HttpCode,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { BasicAuthGuard } from '../auth';
 import { Order, OrderService } from '../order';
@@ -21,16 +22,18 @@ import { CreateOrderDto, PutCartPayload } from 'src/order/type';
 @Controller('api/profile/cart')
 export class CartController {
   constructor(
-    private cartService: CartService,
+    @Inject(CartService) private cartService: CartService,
     private orderService: OrderService,
-  ) {}
+  ) { }
 
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Get()
   findUserCart(@Req() req: AppRequest): CartItem[] {
+    console.log('api/profile/cart get method hit', req.user)
+
     const cart = this.cartService.findOrCreateByUserId(
-      getUserIdFromRequest(req),
+      getUserIdFromRequest(req) ?? '',
     );
 
     return cart.items;
@@ -45,7 +48,7 @@ export class CartController {
   ): CartItem[] {
     // TODO: validate body payload...
     const cart = this.cartService.updateByUserId(
-      getUserIdFromRequest(req),
+      getUserIdFromRequest(req) ?? '',
       body,
     );
 

@@ -5,9 +5,22 @@ import { PutCartPayload } from 'src/order/type';
 
 @Injectable()
 export class CartService {
-  private userCarts: Record<string, Cart> = {};
+  private userCarts: Record<string, Cart> = {
+    "a": {
+      id: '1234',
+      user_id: "a",
+      created_at: Date.now(),
+      updated_at: Date.now(),
+      status: CartStatuses.OPEN,
+      items: [
+        { product: { id: 'prod', title: 'car', description: 'descr', price: 122 }, count: 2 }
+      ]
+    }
+  };
 
   findByUserId(userId: string): Cart {
+    console.log('find by user id ', userId)
+    console.log(this.userCarts)
     return this.userCarts[userId];
   }
 
@@ -56,7 +69,7 @@ export class CartService {
     return userCart;
   }
 
-  removeByUserId(userId): void {
+  removeByUserId(userId: string): void {
     this.userCarts[userId] = null;
   }
 }
