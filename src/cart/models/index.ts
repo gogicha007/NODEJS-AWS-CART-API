@@ -1,6 +1,6 @@
 export enum CartStatuses {
   OPEN = 'OPEN',
-  STATUS = 'STATUS',
+  STATUS = 'ORDERED',
 }
 
 export type Product = {
