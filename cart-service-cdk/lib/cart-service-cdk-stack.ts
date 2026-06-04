@@ -9,7 +9,7 @@ export class CartServiceCdkStack extends cdk.Stack {
     super(scope, id, props);
 
     const cartService = new NodejsFunction(this, 'CartServiceLambda', {
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_LATEST,
       handler: 'handler',
       entry: path.join(__dirname, '../../src/main.ts'),
       projectRoot: path.join(__dirname, '../../'),
