@@ -8,8 +8,8 @@ import { OrderModule } from './order/order.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [AuthModule, CartModule, OrderModule, ConfigModule.forRoot()],
+  imports: [AuthModule, CartModule, OrderModule, ConfigModule.forRoot({ isGlobal: true })],
   controllers: [AppController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

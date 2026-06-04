@@ -1,3 +1,4 @@
+-- this script runs in pgAdmin
 TRUNCATE TABLE cart_items CASCADE;
 TRUNCATE TABLE carts CASCADE;
 
