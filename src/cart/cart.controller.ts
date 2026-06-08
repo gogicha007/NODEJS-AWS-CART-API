@@ -36,6 +36,8 @@ export class CartController {
       getUserIdFromRequest(req) ?? '',
     );
 
+    console.log('controller get cart', cart)
+
     return cart?.items ?? [];
   }
 

@@ -7,7 +7,7 @@ export class Cart {
     @PrimaryGeneratedColumn('uuid')
     id!: string
 
-    @Column()
+    @Column({ name: 'user_id', type: 'uuid' })
     userId!: string
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })

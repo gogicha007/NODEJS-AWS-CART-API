@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-// import { randomUUID } from 'node:crypto';
 import { Cart, CartStatuses } from '../models';
 import { PutCartPayload } from 'src/order/type';
 import { Cart as CartRepo } from '../entities/cart.entity';
@@ -32,12 +31,10 @@ export class CartService {
   ) { }
 
   async findByUserId(userId: string): Promise<CartWithItemsResponseDto | null> {
-    console.log('find by user id ', userId)
     const cart = await this.cartRepository.findOne({
       where: { userId: userId },
       select: { id: true, userId: true, status: true }
     })
-    // return this.userCarts[userId];
 
     if (!cart) return null
 
@@ -47,24 +44,11 @@ export class CartService {
   }
 
   async createByUserId(userId: string): Promise<CartWithItemsResponseDto> {
-    // const timestamp = Date.now();
-
-    // const userCart = {
-    //   id: randomUUID(),
-    //   userId,
-    //   created_at: timestamp,
-    //   updated_at: timestamp,
-    //   status: CartStatuses.OPEN,
-    //   items: [],
-    // };
-
-    // this.userCarts[user_id] = userCart;
 
     const newCart = this.cartRepository.create({
       userId,
       status: CartStatus.OPEN
     })
-
 
     const savedCart = await this.cartRepository.save(newCart)
 

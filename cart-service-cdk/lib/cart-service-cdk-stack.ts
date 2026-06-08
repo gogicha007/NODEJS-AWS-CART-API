@@ -5,6 +5,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as path from 'node:path';
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 
+
 export class CartServiceCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -17,7 +18,7 @@ export class CartServiceCdkStack extends cdk.Stack {
       {
         vpc: vpc,
         description: 'Security group for Cart Service Lambda',
-        allowAllOutbound: false,
+        allowAllOutbound: true,
       }
     )
 
@@ -40,10 +41,8 @@ export class CartServiceCdkStack extends cdk.Stack {
       entry: path.join(__dirname, '../../src/main.ts'),
       vpc: vpc,
       vpcSubnets: {
-        // subnetType: ec2.SubnetType.PRIVATE_ISOLATED
         subnetType: ec2.SubnetType.PUBLIC
       },
-      
       allowPublicSubnet: true,
 
       securityGroups: [cartServiceLambdaSecurityGroup],
@@ -53,12 +52,15 @@ export class CartServiceCdkStack extends cdk.Stack {
         RDS_PG_USERNAME: process.env.RDS_PG_USERNAME ?? 'postgres',
         RDS_PG_PASSWORD: process.env.RDS_PG_PASSWORD ?? '',
         RDS_PG_DATABASE: process.env.RDS_PG_DATABASE ?? 'postgres',
+        RDS_PG_SSL: process.env.RDS_PG_SSL ?? 'true',
         TYPEORM_SYNCHRONIZE: process.env.TYPEORM_SYNCHRONIZE ?? 'false',
       },
       projectRoot: path.join(__dirname, '../../'),
       timeout: cdk.Duration.seconds(30),
 
       bundling: {
+        keepNames: true,
+        tsconfig: path.join(__dirname, '../../tsconfig.json'),
         externalModules: [
           // 'aws-sdk',
           'expo-sqlite',
