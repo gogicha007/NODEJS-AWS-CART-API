@@ -3,8 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 
 import { BasicStrategy as Strategy } from 'passport-http';
 
-import { User } from 'src/users/entities/user.entity';
-
 import { AuthService } from '../auth.service';
 
 @Injectable()
