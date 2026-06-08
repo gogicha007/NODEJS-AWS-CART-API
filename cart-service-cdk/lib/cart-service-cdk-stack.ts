@@ -34,13 +34,18 @@ export class CartServiceCdkStack extends cdk.Stack {
     )
 
     const cartService = new NodejsFunction(this, 'CartServiceLambda', {
-      runtime: lambda.Runtime.NODEJS_LATEST,
+      // runtime: lambda.Runtime.NODEJS_LATEST,
+      runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
       entry: path.join(__dirname, '../../src/main.ts'),
       vpc: vpc,
       vpcSubnets: {
-        subnetType: ec2.SubnetType.PRIVATE_ISOLATED
+        // subnetType: ec2.SubnetType.PRIVATE_ISOLATED
+        subnetType: ec2.SubnetType.PUBLIC
       },
+      
+      allowPublicSubnet: true,
+
       securityGroups: [cartServiceLambdaSecurityGroup],
       environment: {
         RDS_PG_HOST: process.env.RDS_PG_HOST ?? '',
@@ -55,6 +60,10 @@ export class CartServiceCdkStack extends cdk.Stack {
 
       bundling: {
         externalModules: [
+          // 'aws-sdk',
+          'expo-sqlite',
+          'react-native-sqlite-storage',
+          'typeorm-aurora-data-api-driver',
           '@nestjs/websockets/socket-module',
           '@nestjs/microservices/microservices-module',
           '@nestjs/microservices',

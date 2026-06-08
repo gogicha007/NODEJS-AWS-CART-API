@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { Cart, CartStatuses } from '../models';
 import { PutCartPayload } from 'src/order/type';
 import { Cart as CartRepo } from '../entities/cart.entity';
-import { CartItem as CartItemsRepo } from '../entities/cart-items.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartStatus } from '../entities/cart-status.enum';
@@ -30,8 +29,6 @@ export class CartService {
     @InjectRepository(CartRepo)
     private readonly cartRepository: Repository<CartRepo>,
 
-    @InjectRepository(CartItemsRepo)
-    private readonly cartItemsRepository: Repository<CartItemsRepo>
   ) { }
 
   async findByUserId(userId: string): Promise<CartWithItemsResponseDto | null> {
@@ -41,13 +38,10 @@ export class CartService {
       select: { id: true, userId: true, status: true }
     })
     // return this.userCarts[userId];
+
     if (!cart) return null
 
-    const cartItems = await this.cartItemsRepository.find({
-      where: { cartId: cart.id }
-    })
-
-    const cartWithItems = { ...cart, items: cartItems || [] }
+    const cartWithItems = { ...cart, items: [] }
 
     return cartWithItems
   }
@@ -64,19 +58,21 @@ export class CartService {
     //   items: [],
     // };
 
+    // this.userCarts[user_id] = userCart;
+
     const newCart = this.cartRepository.create({
       userId,
       status: CartStatus.OPEN
     })
 
-    // this.userCarts[user_id] = userCart;
 
     const savedCart = await this.cartRepository.save(newCart)
 
-
     console.log('Cart created successfully: ', savedCart)
 
-    return savedCart;
+    const cart = { ...savedCart, items: [] }
+
+    return cart;
   }
 
   async findOrCreateByUserId(userId: string): Promise<CartWithItemsResponseDto | null> {
@@ -96,18 +92,20 @@ export class CartService {
   async updateByUserId(userId: string, payload: PutCartPayload): Promise<CartWithItemsResponseDto | null> {
     const userCart = await this.findOrCreateByUserId(userId);
 
+    if (!userCart) return null
 
     const index = userCart?.items.findIndex(
-      ({ productId }) => productId === payload.product.id,
+      ({ product }) => product.id === payload.product.id,
     );
 
-    if (index === -1) {
+    if (!index) return userCart
 
-      // userCart.items.push(payload);
+    if (index === -1) {
+      userCart?.items.push(payload);
     } else if (payload.count === 0) {
-      // userCart.items.splice(index, 1);
+      userCart?.items.splice(index, 1);
     } else {
-      // userCart.items[index] = payload;
+      userCart.items[index] = payload;
     }
 
     return userCart;

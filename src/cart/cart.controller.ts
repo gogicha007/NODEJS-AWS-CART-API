@@ -29,30 +29,30 @@ export class CartController {
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Get()
-  findUserCart(@Req() req: AppRequest): CartItem[] {
+  async findUserCart(@Req() req: AppRequest): Promise<CartItem[]> {
     console.log('api/profile/cart get method hit', req.user)
 
-    const cart = this.cartService.findOrCreateByUserId(
+    const cart = await this.cartService.findOrCreateByUserId(
       getUserIdFromRequest(req) ?? '',
     );
 
-    return cart.items;
+    return cart?.items ?? [];
   }
 
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Put()
-  updateUserCart(
+  async updateUserCart(
     @Req() req: AppRequest,
     @Body() body: PutCartPayload,
-  ): CartItem[] {
+  ): Promise<CartItem[]> {
     // TODO: validate body payload...
-    const cart = this.cartService.updateByUserId(
+    const cart = await this.cartService.updateByUserId(
       getUserIdFromRequest(req) ?? '',
       body,
     );
 
-    return cart.items;
+    return cart?.items ?? [];
   }
 
   // @UseGuards(JwtAuthGuard)
@@ -66,9 +66,9 @@ export class CartController {
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Put('order')
-  checkout(@Req() req: AppRequest, @Body() body: CreateOrderDto) {
+  async checkout(@Req() req: AppRequest, @Body() body: CreateOrderDto) {
     const userId = getUserIdFromRequest(req) ?? '';
-    const cart = this.cartService.findByUserId(userId);
+    const cart = await this.cartService.findByUserId(userId);
 
     if (!(cart && cart.items.length)) {
       throw new BadRequestException('Cart is empty');

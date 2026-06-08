@@ -1,8 +1,5 @@
 import { CartStatus } from "../entities/cart-status.enum";
-export type CartItem = {
-    productId: string
-    count: number
-}
+import { CartItem } from "../models";
 
 export class CartWithItemsResponseDto {
     id!: string;
