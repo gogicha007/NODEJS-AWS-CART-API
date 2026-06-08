@@ -46,7 +46,7 @@
     "@nestjs/testing": "^10.0.3",
     "@types/aws-lambda": "^8.10.161",
     "@types/express": "^4.17.17",
-    "@types/jest": "29.5.2",
+    "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
     "@types/passport": "^1.0.17",
     "@types/passport-http": "^0.3.11",
@@ -82,5 +82,11 @@
     },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "allowScripts": {
+    "@nestjs/core@10.3.10": true,
+    "aws-sdk@2.1693.0": true,
+    "esbuild@0.28.0": true,
+    "serverless@4.37.0": true
   }
 }
