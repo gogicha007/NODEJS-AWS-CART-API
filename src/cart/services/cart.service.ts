@@ -2,62 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { Cart, CartStatuses } from '../models';
 import { PutCartPayload } from 'src/order/type';
 import { Cart as CartRepo } from '../entities/cart.entity';
-import { CartItem as CartItemRepo } from '../entities/cart-items.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartStatus } from '../entities/cart-status.enum';
-import { CartWithItemsResponseDto } from '../dto/response-cart-with-items.dto';
-
-const mockData = {
-  "a": {
-    id: '1234',
-    user_id: "a",
-    created_at: Date.now(),
-    updated_at: Date.now(),
-    status: CartStatuses.OPEN,
-    items: [
-      { product: { id: 'prod', title: 'car', description: 'descr', price: 122 }, count: 2 }
-    ]
-  }
-}
 
 @Injectable()
 export class CartService {
-  // private userCarts: Record<string, Cart | null> = mockData;
   private userCarts: Record<string, Cart | null> = {};
 
   constructor(
     @InjectRepository(CartRepo)
     private readonly cartRepository: Repository<CartRepo>,
-
-    @InjectRepository(CartItemRepo)
-    private readonly cartItemsRepository: Repository<CartItemRepo>
   ) { }
 
-  async findByUserId(userId: string): Promise<CartWithItemsResponseDto | null> {
-    const cart = await this.cartRepository.findOne({
-      where: { userId: userId },
-      select: { id: true, userId: true, createdAt: true, updatedAt: true, status: true }
-    })
-
-    if (!cart) return null
-
-    const cartWithItems = { ...cart, items: [] }
-
-    this.userCarts[userId] = {
-      ...cart,
-      user_id: userId,
-      created_at: +cart.createdAt,
-      updated_at: +cart.updatedAt,
-      status: CartStatuses[cart.status],
-      items: []
-    }
-
-    return cartWithItems
+  findByUserId(userId: string): Cart | null {
+    return this.userCarts[userId]
   }
 
-  async createByUserId(userId: string): Promise<CartWithItemsResponseDto> {
-
+  async createByUserId(userId: string): Promise<Cart> {
     const newCart = this.cartRepository.create({
       userId,
       status: CartStatus.OPEN
@@ -67,13 +29,24 @@ export class CartService {
 
     console.log('Cart created successfully: ', savedCart)
 
-    const cart = { ...savedCart, items: [] }
+    const cart = {
+      ...savedCart,
+      user_id: userId,
+      created_at: +savedCart.createdAt,
+      updated_at: +savedCart.updatedAt,
+      status: CartStatuses.OPEN,
+      items: []
+    }
+    this.userCarts[userId] = cart
+
+    console.log('createByUserId userCarts', this.userCarts)
+
 
     return cart;
   }
 
-  async findOrCreateByUserId(userId: string): Promise<CartWithItemsResponseDto | null> {
-    const userCart = await this.findByUserId(userId);
+  async findOrCreateByUserId(userId: string): Promise<Cart> {
+    const userCart = this.findByUserId(userId);
 
     if (userCart) {
       return userCart;
@@ -86,24 +59,15 @@ export class CartService {
     console.log('checkout for userId: ', userId)
   }
 
-  async updateByUserId(userId: string, payload: PutCartPayload): Promise<CartWithItemsResponseDto | null> {
+  async updateByUserId(userId: string, payload: PutCartPayload): Promise<Cart | null> {
     const userCart = await this.findOrCreateByUserId(userId);
-
-    console.log('updateByUserId service userCart', userCart)
-
-    if (!userCart) return null
 
     const index = userCart?.items.findIndex(
       ({ product }) => product.id === payload.product.id,
     );
 
-    console.log('updateByUserId service userCart index', index)
-
-    // if (!index) return userCart
-
     if (index === -1) {
       userCart?.items.push(payload);
-
     } else if (payload.count === 0) {
       userCart?.items.splice(index, 1);
     } else {

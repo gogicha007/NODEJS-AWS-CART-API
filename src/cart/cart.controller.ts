@@ -72,9 +72,12 @@ export class CartController {
   @Put('order')
   async checkout(@Req() req: AppRequest, @Body() body: CreateOrderDto) {
     console.log('api/profile/cart/order put method hit', req.user)
-    
+
     const userId = getUserIdFromRequest(req) ?? '';
-    const cart = await this.cartService.findByUserId(userId);
+
+    const cart = this.cartService.findByUserId(userId);
+
+    console.log('api/profile/cart/order put, cart: ', cart)
 
     if (!(cart && cart.items.length)) {
       throw new BadRequestException('Cart is empty');
