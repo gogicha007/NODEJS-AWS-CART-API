@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Cart, CartStatuses } from '../models';
 import { PutCartPayload } from 'src/order/type';
 import { Cart as CartRepo } from '../entities/cart.entity';
+import { CartItem as CartItemRepo } from '../entities/cart-items.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartStatus } from '../entities/cart-status.enum';
@@ -22,22 +23,35 @@ const mockData = {
 
 @Injectable()
 export class CartService {
-  private userCarts: Record<string, Cart | null> = mockData;
+  // private userCarts: Record<string, Cart | null> = mockData;
+  private userCarts: Record<string, Cart | null> = {};
 
   constructor(
     @InjectRepository(CartRepo)
     private readonly cartRepository: Repository<CartRepo>,
+
+    @InjectRepository(CartItemRepo)
+    private readonly cartItemsRepository: Repository<CartItemRepo>
   ) { }
 
   async findByUserId(userId: string): Promise<CartWithItemsResponseDto | null> {
     const cart = await this.cartRepository.findOne({
       where: { userId: userId },
-      select: { id: true, userId: true, status: true }
+      select: { id: true, userId: true, createdAt: true, updatedAt: true, status: true }
     })
 
     if (!cart) return null
 
     const cartWithItems = { ...cart, items: [] }
+
+    this.userCarts[userId] = {
+      ...cart,
+      user_id: userId,
+      created_at: +cart.createdAt,
+      updated_at: +cart.updatedAt,
+      status: CartStatuses[cart.status],
+      items: []
+    }
 
     return cartWithItems
   }
@@ -75,22 +89,28 @@ export class CartService {
   async updateByUserId(userId: string, payload: PutCartPayload): Promise<CartWithItemsResponseDto | null> {
     const userCart = await this.findOrCreateByUserId(userId);
 
+    console.log('updateByUserId service userCart', userCart)
+
     if (!userCart) return null
 
     const index = userCart?.items.findIndex(
       ({ product }) => product.id === payload.product.id,
     );
 
-    if (!index) return userCart
+    console.log('updateByUserId service userCart index', index)
+
+    // if (!index) return userCart
 
     if (index === -1) {
       userCart?.items.push(payload);
+
     } else if (payload.count === 0) {
       userCart?.items.splice(index, 1);
     } else {
       userCart.items[index] = payload;
     }
 
+    console.log('updateByUserId service userCart', userCart)
     return userCart;
   }
 

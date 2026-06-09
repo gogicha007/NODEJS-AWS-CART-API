@@ -36,8 +36,6 @@ export class CartController {
       getUserIdFromRequest(req) ?? '',
     );
 
-    console.log('controller get cart', cart)
-
     return cart?.items ?? [];
   }
 
@@ -49,6 +47,9 @@ export class CartController {
     @Body() body: PutCartPayload,
   ): Promise<CartItem[]> {
     // TODO: validate body payload...
+    console.log('api/profile/cart put method hit', req.user)
+    console.log('update user cart controller body', body)
+
     const cart = await this.cartService.updateByUserId(
       getUserIdFromRequest(req) ?? '',
       body,
@@ -62,6 +63,7 @@ export class CartController {
   @Delete()
   @HttpCode(HttpStatus.OK)
   clearUserCart(@Req() req: AppRequest) {
+    console.log('api/profile/cart delete method hit', req.user)
     this.cartService.removeByUserId(getUserIdFromRequest(req) as string);
   }
 
@@ -69,6 +71,8 @@ export class CartController {
   @UseGuards(BasicAuthGuard)
   @Put('order')
   async checkout(@Req() req: AppRequest, @Body() body: CreateOrderDto) {
+    console.log('api/profile/cart/order put method hit', req.user)
+    
     const userId = getUserIdFromRequest(req) ?? '';
     const cart = await this.cartService.findByUserId(userId);
 
