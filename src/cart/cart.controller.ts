@@ -23,7 +23,7 @@ import { CreateOrderDto, PutCartPayload } from 'src/order/type';
 export class CartController {
   constructor(
     @Inject(CartService) private cartService: CartService,
-    private orderService: OrderService,
+    @Inject(OrderService) private orderService: OrderService,
   ) { }
 
   // @UseGuards(JwtAuthGuard)
@@ -77,14 +77,14 @@ export class CartController {
 
     const cart = this.cartService.findByUserId(userId);
 
-    console.log('api/profile/cart/order put, cart: ', cart)
-
     if (!(cart && cart.items.length)) {
       throw new BadRequestException('Cart is empty');
     }
 
     const { id: cartId, items } = cart;
+
     const total = calculateCartTotal(items);
+
     const order = this.orderService.create({
       userId,
       cartId,
@@ -95,6 +95,8 @@ export class CartController {
       address: body.address,
       total,
     });
+
+    console.log('api/profile/cart/order put, order', order)
     this.cartService.removeByUserId(userId);
 
     return {

@@ -1,11 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Order } from '../models';
+import { Order as OrderRepo } from '../entities/order.entity';
 import { CreateOrderPayload, OrderStatus } from '../type';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrderService {
   private orders: Record<string, Order> = {};
+
+  constructor(
+    @InjectRepository(OrderRepo)
+    private readonly orderRepository: Repository<OrderRepo>
+  ) { }
 
   getAll() {
     return Object.values(this.orders);
@@ -16,6 +24,7 @@ export class OrderService {
   }
 
   create(data: CreateOrderPayload) {
+    console.log('orderService, data', data)
     const id = randomUUID() as string;
     const order: Order = {
       id,
