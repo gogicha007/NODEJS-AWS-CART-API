@@ -18,12 +18,14 @@ import { calculateCartTotal } from './models-rules';
 import { CartService } from './services';
 import { CartItem } from './models';
 import { CreateOrderDto, PutCartPayload } from 'src/order/type';
+import { DataSource } from 'typeorm';
 
 @Controller('api/profile/cart')
 export class CartController {
   constructor(
     @Inject(CartService) private cartService: CartService,
     @Inject(OrderService) private orderService: OrderService,
+    @Inject(DataSource) private readonly dataSource: DataSource
   ) { }
 
   // @UseGuards(JwtAuthGuard)
@@ -48,7 +50,6 @@ export class CartController {
   ): Promise<CartItem[]> {
     // TODO: validate body payload...
     console.log('api/profile/cart put method hit', req.user)
-    console.log('update user cart controller body', body)
 
     const cart = await this.cartService.updateByUserId(
       getUserIdFromRequest(req) ?? '',
@@ -74,7 +75,6 @@ export class CartController {
     console.log('api/profile/cart/order put method hit', req.user)
 
     const userId = getUserIdFromRequest(req) ?? '';
-
     const cart = this.cartService.findByUserId(userId);
 
     if (!(cart && cart.items.length)) {
@@ -82,26 +82,40 @@ export class CartController {
     }
 
     const { id: cartId, items } = cart;
-
     const total = calculateCartTotal(items);
 
-    const order = this.orderService.create({
-      userId,
-      cartId,
-      items: items.map(({ product, count }) => ({
-        productId: product.id,
-        count,
-      })),
-      address: body.address,
-      total,
-    });
+    // start DB transaction
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
 
-    console.log('api/profile/cart/order put, order', order)
-    this.cartService.removeByUserId(userId);
+    try {
+      const orderData = {
+        userId,
+        cartId,
+        items: items.map(({ product, count }) => ({
+          productId: product.id,
+          count,
+        })),
+        address: body.address,
+        total,
 
-    return {
-      order,
-    };
+      }
+      const order = await this.orderService.createWithTransaction(orderData, queryRunner.manager);
+
+      console.log('cart checkout, order', order)
+      await this.cartService.updateStatusWithTransaction(cartId, "ORDERED", queryRunner.manager)
+
+      await queryRunner.commitTransaction()
+
+      return { order }
+    } catch (error) {
+      console.log('cart checkout caught an error', error)
+      await queryRunner.rollbackTransaction()
+      throw new BadRequestException(`Checkout failed: ${error}`)
+    } finally {
+      await queryRunner.release()
+    }
   }
 
   @UseGuards(BasicAuthGuard)

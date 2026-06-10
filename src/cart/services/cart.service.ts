@@ -3,7 +3,7 @@ import { Cart, CartStatuses } from '../models';
 import { PutCartPayload } from 'src/order/type';
 import { Cart as CartRepo } from '../entities/cart.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CartStatus } from '../entities/cart-status.enum';
 
 @Injectable()
@@ -55,10 +55,6 @@ export class CartService {
     return this.createByUserId(userId);
   }
 
-  checkout(userId: string) {
-    console.log('checkout for userId: ', userId)
-  }
-
   async updateByUserId(userId: string, payload: PutCartPayload): Promise<Cart | null> {
     const userCart = await this.findOrCreateByUserId(userId);
 
@@ -80,5 +76,14 @@ export class CartService {
 
   removeByUserId(userId: string): void {
     this.userCarts[userId] = null;
+  }
+
+  async updateStatusWithTransaction(cartId: string, status: CartStatus, entityManager: EntityManager) {
+    console.log('updateStatusWithTransactoin, cardIt', cartId)
+    await entityManager.update(
+      CartRepo,
+      { id: cartId },
+      { status: CartStatus[status] }
+    )
   }
 }
