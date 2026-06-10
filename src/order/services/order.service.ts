@@ -48,7 +48,7 @@ export class OrderService {
     const newOrder = new OrderRepo()
 
     newOrder.userId = data.userId
-    newOrder.cartId = data.userId
+    newOrder.cartId = data.cartId
     newOrder.total = data.total
 
     newOrder.status = OrderStatus.Open
