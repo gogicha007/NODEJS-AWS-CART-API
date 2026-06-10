@@ -17,6 +17,7 @@ import { AppRequest, getUserIdFromRequest } from '../shared';
 import { calculateCartTotal } from './models-rules';
 import { CartService } from './services';
 import { CartItem } from './models';
+import { CartStatus } from './entities/cart-status.enum';
 import { CreateOrderDto, PutCartPayload } from 'src/order/type';
 import { DataSource } from 'typeorm';
 
@@ -104,7 +105,7 @@ export class CartController {
       const order = await this.orderService.createWithTransaction(orderData, queryRunner.manager);
 
       console.log('cart checkout, order', order)
-      await this.cartService.updateStatusWithTransaction(cartId, "ORDERED", queryRunner.manager)
+      await this.cartService.updateStatusWithTransaction(cartId, CartStatus.ORDERED, queryRunner.manager)
 
       await queryRunner.commitTransaction()
 
