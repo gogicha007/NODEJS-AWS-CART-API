@@ -24,7 +24,6 @@ export class OrderService {
   }
 
   create(data: CreateOrderPayload) {
-    console.log('orderService, data', data)
     const id = randomUUID() as string;
     const order: Order = {
       id,
@@ -44,7 +43,6 @@ export class OrderService {
   }
 
   async createWithTransaction(data: CreateOrderPayload, entityManager: EntityManager) {
-    console.log('createWithTransaction, data', data)
     const newOrder = new OrderRepo()
 
     newOrder.userId = data.userId

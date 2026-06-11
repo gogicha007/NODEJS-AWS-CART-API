@@ -78,7 +78,6 @@ export class CartService {
   }
 
   async updateStatusWithTransaction(userId: string, cartId: string, status: CartStatus, entityManager: EntityManager) {
-    console.log('updateStatusWithTransactoin, cardIt', cartId)
     await entityManager.update(
       CartRepo,
       { id: cartId },
@@ -87,5 +86,6 @@ export class CartService {
     if (this.userCarts[userId]) {
       this.userCarts[userId].status = CartStatuses[status]
     }
+    console.log('updateStatusWithTransaciton, userCarts', this.userCarts[userId])
   }
 }
