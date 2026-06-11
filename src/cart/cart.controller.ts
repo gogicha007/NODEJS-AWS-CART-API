@@ -105,7 +105,7 @@ export class CartController {
       const order = await this.orderService.createWithTransaction(orderData, queryRunner.manager);
 
       console.log('cart checkout, order', order)
-      await this.cartService.updateStatusWithTransaction(cartId, CartStatus.ORDERED, queryRunner.manager)
+      await this.cartService.updateStatusWithTransaction(userId, cartId, CartStatus.ORDERED, queryRunner.manager)
 
       await queryRunner.commitTransaction()
 
