@@ -3,34 +3,18 @@ cart-service-cdk/
 SQL-script/
 test/
 node_modules/
-npm-debug.log
-yarn-error.log
 
 # Build outputs
 dist/
-build/
-
-# IDEs and system files
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.DS_Store
-Thumbs.db
 
 # Version control
 .git/
 .gitignore
 
-# AWS / Elastic Beanstalk specific
+# AWS / Elastic Beanstalk
 .elasticbeanstalk/
-.aws/
-*.zip
 
-# Environment variables and secrets
+# Environment variables
 .env
 .env.*
 !.env.example
