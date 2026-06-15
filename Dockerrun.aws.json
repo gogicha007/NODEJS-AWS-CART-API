@@ -1,71 +1,13 @@
 {
   "AWSEBDockerrunVersion": "1",
-  "ContainerDefinitions": [
-    { 
-      "name": "cart-api", 
-      "image": "shop-image:latest",
-      "essential": true,
-      "memory": 512,
-      "portMappings": [
-        {
-          "containerPort": 3000,
-          "hostPort": 80
-        }
-      ],
-      "environment": [
-        {
-          "name": "NODE_ENV",
-          "value": "production"
-        },
-        {
-          "name": "PORT",
-          "value": "3000"
-        },
-        {
-          "name": "RDS_PG_HOST",
-          "value": ""
-        },
-        {
-          "name": "RDS_PG_PORT",
-          "value": "5432"
-        },
-        {
-          "name": "RDS_PG_USERNAME",
-          "value": ""
-        },
-        {
-          "name": "RDS_PG_PASSWORD",
-          "value": ""
-        },
-        {
-          "name": "RDS_PG_DATABASE",
-          "value": ""
-        },
-        {
-          "name": "RDS_PG_SSL",
-          "value": "true"
-        },
-        {
-          "name": "TYPEORM_SYNCHRONIZE",
-          "value": "false"
-        },
-        {
-          "name": "JWT_SECRET",
-          "value": ""
-        },
-        {
-          "name": "JWT_EXPIRATION",
-          "value": "3600"
-        },
-        {
-          "name": "AUTH_USERNAME",
-          "value": ""
-        },
-        {
-          "name": "AUTH_PASSWORD",
-          "value": ""
-        }
-      ]
+  "Image": {
+    "Name": "shop-image:latest",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": 3000,
+      "HostPort": 8080
     }
   ]
 }

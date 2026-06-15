@@ -1,7 +1,7 @@
-# --- Stage 1: Build
+# --- Stage 1: Build ---
 FROM node:20-alpine AS builder
-
-WORKDIR /src/app
+# Normalized to a standard absolute directory
+WORKDIR /usr/src/app
 
 COPY package*.json ./
 RUN npm ci
@@ -9,20 +9,19 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# -- Stage 2: Runtime ---
+# --- Stage 2: Runtime ---
 FROM node:20-alpine AS runner
-WORKDIR /src/app
+WORKDIR /usr/src/app
 
 ENV NODE_ENV=production
 
 COPY package*.json ./
-RUN npm ci --only=production
+# Best practice flag update for modern npm versions
+RUN npm ci --omit=dev && npm cache clean --force
 
-COPY --from=builder /src/app/dist ./dist
+# Correctly copies from the updated builder path
+COPY --from=builder /usr/src/app/dist ./dist
 
 EXPOSE 3000
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 CMD ["node", "dist/main.js"]
