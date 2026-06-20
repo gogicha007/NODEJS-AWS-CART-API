@@ -1,27 +1,32 @@
-# --- Stage 1: Build ---
-FROM node:20-alpine AS builder
-# Normalized to a standard absolute directory
+# --- Stage 1: Dependencies ---
+FROM node:20-alpine AS deps
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-RUN npm ci
+# Install production dependencies only
+RUN npm ci --omit=dev
 
+# --- Stage 2: Build ---
+FROM node:20-alpine AS builder
+WORKDIR /usr/src/app
+
+# Copy dependencies and source code
+COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY . .
-RUN npm run build
 
-# --- Stage 2: Runtime ---
-FROM node:20-alpine AS runner
+# Install all dependencies for build, then build
+RUN npm install && npm run build
+
+# --- Stage 3: Production ---
+FROM gcr.io/distroless/nodejs20-debian12 AS runner
 WORKDIR /usr/src/app
 
 ENV NODE_ENV=production
 
-COPY package*.json ./
-# Best practice flag update for modern npm versions
-RUN npm ci --omit=dev && npm cache clean --force
-
-# Correctly copies from the updated builder path
+# Copy only necessary artifacts from previous stages
+COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
+USER nonroot
 EXPOSE 3000
-
-CMD ["node", "dist/main.js"]
+CMD ["dist/main.js"]
