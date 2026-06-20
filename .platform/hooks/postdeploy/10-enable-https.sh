@@ -24,8 +24,24 @@ fi
 
 # 3. Create public folder for the webroot acme verification challenge
 mkdir -p /var/app/current/public/.well-known/acme-challenge
+chmod -R 755 /var/app/current/public
+chown -R nginx:nginx /var/app/current/public
 
-# 4. If the certificate doesn't exist yet, request it cleanly using webroot mode
+# 4. Inject challenge routing directly into the native Elastic Beanstalk port 80 block
+mkdir -p /etc/nginx/conf.d/elasticbeanstalk
+cat > /etc/nginx/conf.d/elasticbeanstalk/letsencrypt-challenge.conf <<EOF
+location /.well-known/acme-challenge/ {
+    root /var/app/current/public;
+    allow all;
+    try_files \$uri =404;
+}
+EOF
+
+# Safely apply the challenge block right away so Let's Encrypt can read it
+nginx -t
+systemctl reload nginx
+
+# 5. If the certificate doesn't exist yet, request it cleanly using webroot mode
 if [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; then
   echo "Certificate missing. Generating Let's Encrypt SSL via webroot..."
   certbot certonly --webroot -w /var/app/current/public --non-interactive --agree-tos \
@@ -33,7 +49,7 @@ if [ ! -f "$CERT_PATH" ] || [ ! -f "$KEY_PATH" ]; then
     -d "${DOMAIN_NAME}"
 fi
 
-# 5. Write out the final secure Nginx routing architecture
+# 6. Write out the final secure Port 443 Nginx architecture
 cat > /etc/nginx/conf.d/https-letsencrypt.conf <<EOF
 server {
     listen 443 ssl;
@@ -58,28 +74,13 @@ server {
         proxy_pass http://127.0.0.1:80;
     }
 }
-
-server {
-    listen 80;
-    server_name ${DOMAIN_NAME};
-    
-    # Allow the renewal verification path to bypass the HTTPS redirect logic
-    location /.well-known/acme-challenge/ {
-        root /var/app/current/public;
-        allow all;
-    }
-
-    location / {
-        return 301 https://\$host\$request_uri;
-    }
-}
 EOF
 
-# 6. Test configuration rules and reload safely
+# 7. Test configuration rules and reload safely
 nginx -t
 systemctl reload nginx
 
-# 7. Inject automated background renewal cron job
+# 8. Inject automated background renewal cron job
 cat > /etc/cron.d/certbot-renew <<'EOF'
 17 3 * * * root certbot renew --webroot -w /var/app/current/public --quiet --non-interactive && systemctl reload nginx
 EOF
