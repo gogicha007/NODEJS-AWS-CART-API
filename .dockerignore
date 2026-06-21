@@ -1,0 +1,20 @@
+# Dependency directories
+cart-service-cdk/
+SQL-script/
+test/
+node_modules/
+
+# Build outputs
+dist/
+
+# Version control
+.git/
+.gitignore
+
+# AWS / Elastic Beanstalk
+.elasticbeanstalk/
+
+# Environment variables
+.env
+.env.*
+!.env.example
